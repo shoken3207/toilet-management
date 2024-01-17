@@ -1,103 +1,143 @@
 import { styled } from "styled-components";
 import { useEffect, useState } from "react";
-import { FLOORS, GENDER, JSON, RADIO_DATA, TOILET_STYLE } from "@/const";
+import { API_BASE_URL, FLOORS, GENDER, TOILET_STYLE } from "@/const";
+import axios from "axios";
+import { CircularProgress, Tab, Tabs } from "@mui/material";
+import ManIcon from "@mui/icons-material/Man";
+import WomanIcon from "@mui/icons-material/Woman";
+
+type Toile = {
+  floor: number;
+  gender: number;
+  toiletStyle: number;
+  state: Boolean;
+};
 
 export default function Home() {
   const [filterOption, setFilterOption] = useState<{
     floor: number;
     gender: number;
   }>({ floor: 2, gender: GENDER.MALE });
-  const [filterData, setFilterData] = useState<
-    {
-      floor: number;
-      gender: number;
-      id: number;
-      toiletStyle: number;
-      state: Boolean;
-    }[]
-  >([]);
+  const [json, setJson] = useState<Toile[]>([]);
+  const [isLoading, setIsLoading] = useState<Boolean>(false);
 
   useEffect(() => {
-    console.log("switch");
-    const filterData = JSON.filter(
-      (x) => x.floor === filterOption.floor && x.gender === filterOption.gender
-    );
-    setFilterData(filterData);
-    console.log(filterData);
+    fetchJson(filterOption);
   }, [filterOption]);
+  const fetchJson = async ({
+    gender,
+    floor,
+  }: {
+    gender: number;
+    floor: number;
+  }) => {
+    setIsLoading(true);
+    const json: Toile[] = await axios
+      .get(`${API_BASE_URL}/?gender=${gender}&floor=${floor}`)
+      .then((res) => {
+        return res.data;
+      })
+      .finally(() => {
+        setIsLoading(false);
+      })
+      .catch((err) => console.log("err: ", err));
+    console.log("json: ", json);
+    setJson(json);
+  };
   return (
-    <SContainer>
-      <SRow>
-        <SRadio>
-          {RADIO_DATA.map(({ text, id, value }) => (
-            <div>
-              <input
-                type="radio"
-                name="gender"
-                id={id}
-                value={value}
-                checked={filterOption.gender === value}
-                onChange={() =>
+    <SWrap>
+      <SContainer>
+        <SRow>
+          <Tabs
+            value={filterOption.gender}
+            onChange={(event: React.SyntheticEvent, value: number) => {
+              console.log("value: ", value);
+              setFilterOption({ ...filterOption, gender: value });
+            }}
+            aria-label="icon label tabs example"
+          >
+            <Tab icon={<ManIcon />} label="male" />
+            <Tab icon={<WomanIcon />} label="female" />
+          </Tabs>
+        </SRow>
+        {/* {isLoading && <CircularProgress />} */}
+        <SColumn>
+          <SFloors>
+            {FLOORS.map(({ value, text }: { value: number; text: string }) => (
+              <SFloor
+                selected={value === filterOption.floor}
+                onClick={() => {
                   setFilterOption((prev) => {
-                    return { ...prev, gender: value };
-                  })
-                }
-              />
-              <label htmlFor={id}>{text}</label>
-            </div>
-          ))}
-        </SRadio>
-      </SRow>
-
-      <SColumn>
-        <SFloors>
-          {FLOORS.map(({ value, text }: { value: number; text: string }) => (
-            <SFloor
-              selected={value === filterOption.floor}
-              onClick={() =>
-                setFilterOption((prev) => {
-                  return { ...prev, floor: value };
-                })
-              }
-            >
-              {text}
-            </SFloor>
-          ))}
-        </SFloors>
-        <SToileRooms>
-          {filterData.map((x) => (
-            <SToiletRoom state={x.state}>
-              <span>
-                {x.toiletStyle === TOILET_STYLE.JAPANESE ? "和式" : "洋式"}
-              </span>
-            </SToiletRoom>
-          ))}
-        </SToileRooms>
-      </SColumn>
-    </SContainer>
+                    return { ...prev, floor: value };
+                  });
+                }}
+              >
+                {text}
+              </SFloor>
+            ))}
+          </SFloors>
+          <SToileRooms>
+            {json.map((x) => (
+              <SToiletRoom state={x.state}>
+                <span>
+                  {x.toiletStyle === TOILET_STYLE.JAPANESE ? "和式" : "洋式"}
+                </span>
+              </SToiletRoom>
+            ))}
+          </SToileRooms>
+        </SColumn>
+      </SContainer>
+    </SWrap>
   );
 }
 
+const SWrap = styled.div`
+  position: relative;
+  z-index: 0;
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  padding-top: 3rem;
+
+  &::before {
+    content: "";
+    animation-name: animation;
+    animation-duration: 4s;
+    animation-iteration-count: infinite;
+    width: 100%;
+    height: 100vh;
+    background-image: url("../../background.jpg");
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: -1;
+  }
+
+  @keyframes animation {
+    0% {
+      filter: blur(5px);
+    }
+
+    50% {
+      filter: blur(12px);
+    }
+
+    100% {
+      filter: blur(5px);
+    }
+  }
+`;
+
 const SContainer = styled.div`
   width: 90%;
-  margin: 2rem auto;
   max-width: 560px;
   display: flex;
   flex-direction: column;
   row-gap: 1.5rem;
-`;
-
-const SRadio = styled.div`
-  display: flex;
-  flex-direction: column;
-  row-gap: 0.3rem;
-
-  > div {
-    display: flex;
-    align-items: flex-start;
-    justify-content: flex-start;
-    column-gap: 0.3rem;
-  }
 `;
 
 const SRow = styled.div`
@@ -119,9 +159,9 @@ const SFloors = styled.div`
 
 const SFloor = styled.div<{ selected: boolean }>`
   color: ${({ selected }) => (selected ? "white" : "black")};
-  background-color: ${({ selected }) => (selected ? "gray" : "white")};
+  background-color: ${({ selected }) => (selected ? "#AFD5C6" : "white")};
   padding: 1rem 2rem;
-  border: 1px solid gray;
+  border: 1px solid #afd5c6;
   cursor: pointer;
 `;
 
@@ -132,7 +172,7 @@ const SToileRooms = styled.div`
 `;
 
 const SToiletRoom = styled.div<{ state: Boolean }>`
-  border: 1px solid black;
+  border: 1px solid #afd5c6;
   padding: 0.7rem;
   width: 100px;
   height: 100px;
@@ -141,7 +181,7 @@ const SToiletRoom = styled.div<{ state: Boolean }>`
   justify-content: center;
   align-items: center;
   color: ${({ state }) => (state ? "white" : "black")};
-  background-color: ${({ state }) => (state ? "gray" : "white")};
+  background-color: ${({ state }) => (state ? "#AFD5C6" : "white")};
 
   > span {
     font-size: 1.8rem;
