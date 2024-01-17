@@ -42,7 +42,7 @@ export default function Home() {
       })
       .catch((err) => console.log("err: ", err));
     console.log("json: ", json);
-    setJson(json);
+    setJson(json || []);
   };
   return (
     <SWrap>
@@ -56,8 +56,8 @@ export default function Home() {
             }}
             aria-label="icon label tabs example"
           >
-            <Tab icon={<ManIcon />} label="male" />
-            <Tab icon={<WomanIcon />} label="female" />
+            <Tab icon={<ManIcon />} label="男性用トイレ" />
+            <Tab icon={<WomanIcon />} label="女性用トイレ" />
           </Tabs>
         </SRow>
         {/* {isLoading && <CircularProgress />} */}
