@@ -15,4 +15,4 @@ export const FLOORS: { value: number; text: string }[] = [
   { value: 4, text: "4階" },
 ];
 
-export const API_BASE_URL = "http://10.24.111.104:3000/api";
+export const API_BASE_URL = "https://toilet.onrender.com/api";
