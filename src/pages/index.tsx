@@ -41,7 +41,6 @@ export default function Home() {
         setIsLoading(false);
       })
       .catch((err) => console.log("err: ", err));
-    console.log("json: ", json);
     setJson(json || []);
   };
   return (
@@ -51,7 +50,6 @@ export default function Home() {
           <Tabs
             value={filterOption.gender}
             onChange={(event: React.SyntheticEvent, value: number) => {
-              console.log("value: ", value);
               setFilterOption({ ...filterOption, gender: value });
             }}
             aria-label="icon label tabs example"
@@ -63,22 +61,25 @@ export default function Home() {
         {/* {isLoading && <CircularProgress />} */}
         <SColumn>
           <SFloors>
-            {FLOORS.map(({ value, text }: { value: number; text: string }) => (
-              <SFloor
-                selected={value === filterOption.floor}
-                onClick={() => {
-                  setFilterOption((prev) => {
-                    return { ...prev, floor: value };
-                  });
-                }}
-              >
-                {text}
-              </SFloor>
-            ))}
+            {FLOORS.map(
+              ({ value, text }: { value: number; text: string }, index) => (
+                <SFloor
+                  selected={value === filterOption.floor}
+                  key={index}
+                  onClick={() => {
+                    setFilterOption((prev) => {
+                      return { ...prev, floor: value };
+                    });
+                  }}
+                >
+                  {text}
+                </SFloor>
+              )
+            )}
           </SFloors>
           <SToileRooms>
-            {json.map((x) => (
-              <SToiletRoom state={x.state}>
+            {json.map((x, index) => (
+              <SToiletRoom state={x.state} key={index}>
                 <span>
                   {x.toiletStyle === TOILET_STYLE.JAPANESE ? "和式" : "洋式"}
                 </span>
