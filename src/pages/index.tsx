@@ -22,6 +22,13 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState<Boolean>(false);
 
   useEffect(() => {
+    const gender: String | null = localStorage.getItem("gender");
+    if (gender) {
+      setFilterOption({ ...filterOption, gender: Number(gender) });
+    }
+  }, []);
+  useEffect(() => {
+    localStorage.setItem("gender", String(filterOption.gender));
     fetchJson(filterOption);
   }, [filterOption]);
   const fetchJson = async ({
