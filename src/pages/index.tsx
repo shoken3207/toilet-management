@@ -107,7 +107,7 @@ const SWrap = styled.div`
     animation-duration: 4s;
     animation-iteration-count: infinite;
     width: 100%;
-    height: 100vh;
+    height: 100svh;
     background-image: url("../../background.jpg");
     background-position: center;
     background-repeat: no-repeat;
